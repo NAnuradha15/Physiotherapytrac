@@ -20,6 +20,7 @@ class AuthViewModel: ObservableObject {
     let defaults = UserDefaults.standard
     @Published var login = LoginModel(email: "", pass: "")
     @Published var registration = UserRegisterModel(username: "", mobile: "", email: "", pass: "", isBiometric: false)
+    @Published var updateUser = UserModel(username: UserDefaults.standard.string(forKey: "username") ?? "", mobile: UserDefaults.standard.string(forKey: "userMobile") ?? "", email: UserDefaults.standard.string(forKey: "userEmail") ?? "", isBiometric: UserDefaults.standard.bool(forKey: "userIsBiometric"))
     
     // Sign in using Firebase Authentication
     func signIn() {
@@ -122,6 +123,44 @@ class AuthViewModel: ObservableObject {
             }
         }
     }
+    
+    func updateUserProfile() {
+        self.message.alert.toggle()
+        self.message.isLoading = true
+        
+        guard !updateUser.username.isEmpty, !updateUser.email.isEmpty, !updateUser.mobile.isEmpty else {
+            self.message.isLoading = false
+            self.message.error = "All fields are required."
+            return
+        }
+        
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        let userRef = Firestore.firestore().collection("users").document(userId)
+
+        userRef.updateData([
+            "username": updateUser.username,
+            "mobile": updateUser.mobile,
+            "isBiometric": updateUser.isBiometric
+        ]) { error in
+            if let error = error {
+                self.message.topic = "Error"
+                self.message.isLoading = false
+                self.message.error = "Registration failed: \(error.localizedDescription)"
+                print("Error updating profile: \(error.localizedDescription)")
+            } else {
+                self.message.isLoading = false
+                self.message.error = "Account updated successfully."
+                self.message.topic = "Success"
+                // Update local UserDefaults
+                UserDefaults.standard.setValue(self.updateUser.username, forKey: "username")
+                UserDefaults.standard.setValue(self.updateUser.mobile, forKey: "userMobile")
+                UserDefaults.standard.setValue(self.updateUser.isBiometric, forKey: "userIsBiometric")
+                print("Profile successfully updated.")
+            }
+        }
+    }
+
     
     // Verify Forgot Password
     func verifyResetPassword(){

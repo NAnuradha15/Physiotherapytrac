@@ -24,10 +24,10 @@ struct UserRegisterModel: Codable{
 }
 
 struct UserModel{
-    var username : String?
-    var mobile : String?
-    var email : String?
-    var isBiometric: Bool?
+    var username : String
+    var mobile : String
+    var email : String
+    var isBiometric: Bool
 }
 
 struct User: Codable, Identifiable {

@@ -9,6 +9,6 @@
 enum Tab: String, CaseIterable {
     case Home = "Home"
     case CreateTickets = "OpenTickets"
-    case History = "History"
+    case Reminder = "Reminder"
     case Profile = "Profile"
 }
