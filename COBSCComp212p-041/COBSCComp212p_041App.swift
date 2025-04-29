@@ -21,12 +21,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct COBSCComp212p_041App: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @AppStorage("current_status") var status:Bool = false
+    @AppStorage("isAdministrator") var isAdmin:Bool = false
     var body: some Scene {
         WindowGroup {
             NavigationView{
                 Group{
                     if status{
                         BottomTabBarView()
+                    } else if isAdmin {
+                        TreatmentPlanListView()
                     } else{
                         LoginView()
                     }

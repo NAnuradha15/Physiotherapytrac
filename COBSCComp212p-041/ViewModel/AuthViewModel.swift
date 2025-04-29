@@ -26,7 +26,7 @@ class AuthViewModel: ObservableObject {
     func signIn() {
         self.message.alert.toggle()
         self.message.isLoading = true
-        if(email == "admin@gmail.com" && password == "123456") {
+        if(email == "patient@gmail.com" && password == "123456") {
             self.message.isLoading = false
             self.status = false
             self.isAdmin = true
@@ -136,7 +136,7 @@ class AuthViewModel: ObservableObject {
         
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
-        let userRef = Firestore.firestore().collection("users").document(userId)
+        let userRef = Firestore.firestore().collection("Users").document(userId)
 
         userRef.updateData([
             "username": updateUser.username,

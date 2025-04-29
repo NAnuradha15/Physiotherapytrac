@@ -14,6 +14,7 @@ import FirebaseFirestore
 class TreatmentPlanViewModel: ObservableObject {
     @Published var plan = TreatmentPlan(treatmentName: "", patientID: "", days: 0, time: "", count: 0)
     @Published var message = ErrorMessageModel(alert: false, error: "", topic: "Error", isLoading: false)
+    @Published var treatmentPlans: [TreatmentPlan] = []
 
     func save() {
         self.message.alert.toggle()
@@ -36,4 +37,16 @@ class TreatmentPlanViewModel: ObservableObject {
             print("Error saving plan: \(error)")
         }
     }
+    
+    func fetchPlans() {
+        do {
+            Firestore.firestore().collection("treatmentPlans").order(by: "createdAt", descending: true).addSnapshotListener { (querySnapshot, error) in
+             if let querySnapshot = querySnapshot {
+                 self.treatmentPlans = querySnapshot.documents.compactMap { document -> TreatmentPlan? in
+                     try? document.data(as: TreatmentPlan.self)
+                 }
+             }
+         }
+        } 
+     }
 }

@@ -1,26 +1,46 @@
 //
-//  LoginView.swift
+//  PatientLoginView.swift
 //  COBSCComp212p-041
 //
-//  Created by Yesh Adithya on 2024-10-27.
+//  Created by Yesh Adithya on 2025-04-26.
 //
 
 import SwiftUI
 
-struct LoginView: View {
+struct PatientLoginView: View {
     @StateObject private var loginVM = AuthViewModel()
     @State var visible = false
+    @Environment(\.presentationMode) var present
     
     var body: some View {
         ZStack{
             VStack{
+                HStack(spacing: 20) {
+                    Button(action: {
+                        present.wrappedValue.dismiss()
+                    }, label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(.black)
+                    })
+                    Text("Patient Login")
+                        .fontWeight(.regular)
+                        .font(.system(size: 18))
+                        .foregroundColor(Color.bgBlack)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 15)
+                
                 VStack{
-                        Text("Hello")
-                            .fontWeight(.bold)
-                            .font(.system(size: 64))
-                            .foregroundColor(Color.bgBlack)
-                            .padding(.bottom, 30)
-                    Text("Sign in to your account")
+                    Text("Hello")
+                        .fontWeight(.bold)
+                        .font(.system(size: 64))
+                        .foregroundColor(Color.bgBlack)
+                        .padding(.bottom, 30)
+                    
+                    Text("Sign in to your patient account")
                         .fontWeight(.regular)
                         .font(.system(size: 18))
                         .foregroundColor(Color.bgBlack)
@@ -98,7 +118,7 @@ struct LoginView: View {
                             Spacer()
   
                                 Text("Don't you have an account?")
-                                NavigationLink(destination: RegisterView()) {
+                            NavigationLink(destination: PatientRegisterView()) {
                                     Text(" Sign up")
                                         .fontWeight(.bold)
                                         .foregroundColor(.blue)
@@ -130,30 +150,6 @@ struct LoginView: View {
                         .cornerRadius(10)
                         .padding(.top, 15)
                         
-                        HStack {
-                            VStack {
-                                Divider()
-                            }
-                            Text("OR")
-                                .font(.caption)
-                            VStack {
-                                Divider()
-                            }
-                        }
-                        
-                        NavigationLink {
-                            PatientLoginView()
-                        } label: {
-                            Text("Patient Login")
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .padding(.vertical)
-                                .frame(width: UIScreen.main.bounds.width - 50)
-                        }
-                        .background(Color.black)
-                        .cornerRadius(10)
-                        .padding(.top, 15)
-                        
                     }
                     .padding([.horizontal, .bottom], 20)
                     .padding(.top, 35)
@@ -175,5 +171,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    PatientLoginView()
 }
