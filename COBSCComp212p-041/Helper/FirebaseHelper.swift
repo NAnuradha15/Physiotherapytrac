@@ -29,6 +29,22 @@ func fetchUser(completion: @escaping (UserModel) -> ()){
     }
 }
 
+func fetchPatientUser(completion: @escaping (UserModel) -> ()){
+    let uid = Auth.auth().currentUser!.uid
+    ref.collection("Patient").document(uid).getDocument{ (doc, err) in
+        guard let user = doc else { return }
+        
+        let username = user.data()?["username"] as! String
+        let mobile = user.data()?["mobile"] as! String
+        let email = user.data()?["email"] as! String
+        let isBiometric = user.data()?["isBiometric"] as! Bool
+         
+        DispatchQueue.main.async {
+            completion(UserModel(username: username, mobile: mobile, email: email, isBiometric: isBiometric))
+        }
+    }
+}
+
 
 
 func formatTimestamp(_ timestamp: Timestamp) -> String {
@@ -41,14 +57,20 @@ func formatTimestamp(_ timestamp: Timestamp) -> String {
     return dateFormatter.string(from: date)
 }
 
-func formatDate(_ date: Date) -> String {
+func formatDate(from timestamp: Timestamp) -> String {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd" // Example: 2025-10-01
-    return formatter.string(from: date)
+    formatter.dateFormat = "MMM d, yyyy" // e.g., Apr 29, 2025
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    return formatter.string(from: timestamp.dateValue())
 }
 
-func formatTime(_ date: Date) -> String {
+
+
+func formatTime(from timestamp: Timestamp) -> String {
     let formatter = DateFormatter()
-    formatter.dateFormat = "h:mm a" // Example: 12:00 AM
-    return formatter.string(from: date)
+    formatter.dateFormat = "h:mm a" // e.g., 11:00 AM
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    return formatter.string(from: timestamp.dateValue())
 }
+
+

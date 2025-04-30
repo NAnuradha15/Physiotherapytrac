@@ -8,19 +8,67 @@
 import SwiftUI
 
 struct TreatmentPlanListView: View {
-    @StateObject private var viewModel = TreatmentPlanViewModel()
+    @ObservedObject private var viewModel = TreatmentPlanViewModel()
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    Text("Treatment Plane")
+                        .font(.title)
+                        .bold()
+                    
+                    Spacer()
+                    
+                    NavigationLink(destination: PatientProfileView() ) {
+                        Image(systemName: "person.fill")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .padding()
+                            .foregroundColor(Color.black)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 15)
+
+                Spacer()
+                
+                HStack {
+                    Image(systemName: "person.fill")
+                        .resizable()
+                        .frame(width: 60, height: 60)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(Circle())
+                    
+                    Text(viewModel.User.username)
+                        .font(.headline)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                        .shadow(radius: 1)
+                }
+                .padding(.top, 10)
+                .padding(20)
+                
+                Spacer()
+                
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     ForEach(viewModel.treatmentPlans) { plan in
-                        TreatmentPlanCard(plan: plan)
+                        NavigationLink(destination: TreatmentInputView(treatment: plan)) {
+                            TreatmentPlanCard(plan: plan)
+                        }
+                        
                     }
                 }
                 .padding()
+                Spacer()
+                Spacer()
+                Spacer()
             }
-            .navigationTitle("Treatment Plan")
+            .padding()
+            .navigationBarHidden(true)
             .onAppear {
                 viewModel.fetchPlans()
             }
@@ -53,9 +101,13 @@ struct TreatmentPlanCard: View {
             
             Spacer()
             
-            Text("\(plan.count/2)/\(plan.count)")
-                .font(.title2)
-                .bold()
+            HStack {
+                Spacer()
+                Text("\(plan.count/2)/\(plan.count)")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(Color.black)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, minHeight: 120)

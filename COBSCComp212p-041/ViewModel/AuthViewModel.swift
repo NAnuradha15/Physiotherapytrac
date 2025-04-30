@@ -16,7 +16,7 @@ class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
     @Published var message = ErrorMessageModel(alert: false, error: "", topic: "Error", isLoading: false)
     @AppStorage("current_status") var status = false
-    @AppStorage("isAdministrator") var isAdmin:Bool = false
+    @AppStorage("patient_current_status") var patientStatus = false
     let defaults = UserDefaults.standard
     @Published var login = LoginModel(email: "", pass: "")
     @Published var registration = UserRegisterModel(username: "", mobile: "", email: "", pass: "", isBiometric: false)
@@ -26,31 +26,48 @@ class AuthViewModel: ObservableObject {
     func signIn() {
         self.message.alert.toggle()
         self.message.isLoading = true
-        if(email == "patient@gmail.com" && password == "123456") {
-            self.message.isLoading = false
-            self.status = false
-            self.isAdmin = true
-        }
-        else {
-            Auth.auth().signIn(withEmail: email, password: password) { (res , err)  in
-                if err != nil {
+        Auth.auth().signIn(withEmail: email, password: password) { (res , err)  in
+            if err != nil {
+                self.message.isLoading = false
+                self.message.error = err!.localizedDescription
+            }else{
+                
+                fetchUser() { userDetails in
+                    self.defaults.setValue(userDetails.username, forKey: "username")
+                    self.defaults.setValue(userDetails.mobile, forKey: "userMobile")
+                    self.defaults.setValue(userDetails.isBiometric, forKey: "userIsBiometric")
+                    self.defaults.setValue(self.email, forKey: "userEmail")
+                    self.defaults.setValue(self.password, forKey: "userPassword")
+                    self.message.alert.toggle()
                     self.message.isLoading = false
-                    self.message.error = err!.localizedDescription
-                }else{
-                    
-                    fetchUser() { userDetails in
-                        self.defaults.setValue(userDetails.username, forKey: "username")
-                        self.defaults.setValue(userDetails.mobile, forKey: "userMobile")
-                        self.defaults.setValue(userDetails.isBiometric, forKey: "userIsBiometric")
-                        self.defaults.setValue(self.email, forKey: "userEmail")
-                        self.defaults.setValue(self.password, forKey: "userPassword")
-                        self.message.alert.toggle()
-                        self.message.isLoading = false
-                        self.status = true
-                        self.isAdmin = false
-                    }
-
+                    self.status = true
                 }
+                
+            }
+        }
+    }
+        
+    func patientSignIn() {
+        self.message.alert.toggle()
+        self.message.isLoading = true
+        Auth.auth().signIn(withEmail: email, password: password) { (res , err)  in
+            if err != nil {
+                self.message.isLoading = false
+                self.message.error = err!.localizedDescription
+            }else{
+                
+                fetchPatientUser() { userDetails in
+                    self.defaults.setValue(userDetails.username, forKey: "username")
+                    self.defaults.setValue(userDetails.mobile, forKey: "userMobile")
+                    self.defaults.setValue(userDetails.isBiometric, forKey: "userIsBiometric")
+                    self.defaults.setValue(self.email, forKey: "userEmail")
+                    self.defaults.setValue(self.password, forKey: "userPassword")
+                    self.message.alert.toggle()
+                    self.message.isLoading = false
+                    self.patientStatus = true
+                    self.status = false
+                }
+                
             }
         }
     }
@@ -81,6 +98,41 @@ class AuthViewModel: ObservableObject {
                 try db.collection("Users").document(userId).setData(from: self.registration)
                 self.message.isLoading = false
                 self.message.error = "Account created successfully."
+                self.message.topic = "Success"
+                self.registration = UserRegisterModel(username: "", mobile: "", email: "", pass: "", isBiometric: false)
+            } catch {
+                self.message.isLoading = false
+                self.message.error = "Failed to save user details: \(error.localizedDescription)"
+            }
+        }
+    }
+        
+    func registerPatientUser() {
+        self.message.alert.toggle()
+        self.message.isLoading = true
+        
+        guard !registration.username.isEmpty, !registration.email.isEmpty, !registration.pass.isEmpty, !registration.mobile.isEmpty else {
+            self.message.isLoading = false
+            self.message.error = "All fields are required."
+            return
+        }
+
+        // Register user with Firebase Authentication
+        Auth.auth().createUser(withEmail: registration.email, password: registration.pass) { result, error in
+            if let error = error {
+                self.message.isLoading = false
+                self.message.error = "Registration failed: \(error.localizedDescription)"
+                return
+            }
+
+            guard let userId = result?.user.uid else { return }
+            
+            
+            do {
+                let db = Firestore.firestore()
+                try db.collection("Patient").document(userId).setData(from: self.registration)
+                self.message.isLoading = false
+                self.message.error = "Patient Account created successfully."
                 self.message.topic = "Success"
                 self.registration = UserRegisterModel(username: "", mobile: "", email: "", pass: "", isBiometric: false)
             } catch {
@@ -160,6 +212,43 @@ class AuthViewModel: ObservableObject {
             }
         }
     }
+        
+    func updatePatientUserProfile() {
+        self.message.alert.toggle()
+        self.message.isLoading = true
+        
+        guard !updateUser.username.isEmpty, !updateUser.email.isEmpty, !updateUser.mobile.isEmpty else {
+            self.message.isLoading = false
+            self.message.error = "All fields are required."
+            return
+        }
+        
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        let userRef = Firestore.firestore().collection("Patient").document(userId)
+
+        userRef.updateData([
+            "username": updateUser.username,
+            "mobile": updateUser.mobile,
+            "isBiometric": updateUser.isBiometric
+        ]) { error in
+            if let error = error {
+                self.message.topic = "Error"
+                self.message.isLoading = false
+                self.message.error = "Registration failed: \(error.localizedDescription)"
+                print("Error updating profile: \(error.localizedDescription)")
+            } else {
+                self.message.isLoading = false
+                self.message.error = "Patient Account updated successfully."
+                self.message.topic = "Success"
+                // Update local UserDefaults
+                UserDefaults.standard.setValue(self.updateUser.username, forKey: "username")
+                UserDefaults.standard.setValue(self.updateUser.mobile, forKey: "userMobile")
+                UserDefaults.standard.setValue(self.updateUser.isBiometric, forKey: "userIsBiometric")
+                print("Profile successfully updated.")
+            }
+        }
+    }
 
     
     // Verify Forgot Password
@@ -186,4 +275,23 @@ class AuthViewModel: ObservableObject {
             }
         }
     }
+    
+    func logoutUser() {
+        do {
+            try Auth.auth().signOut()
+            status = false
+            patientStatus = false
+            // Clear any stored user defaults if needed
+            UserDefaults.standard.removeObject(forKey: "username")
+            UserDefaults.standard.removeObject(forKey: "userMobile")
+            UserDefaults.standard.removeObject(forKey: "userIsBiometric")
+
+            // Optionally reset app state or navigate to login
+            print("User successfully logged out.")
+            // You can set a flag or use environment object to redirect
+        } catch let signOutError as NSError {
+            print("Error signing out: %@", signOutError)
+        }
+    }
+
 }

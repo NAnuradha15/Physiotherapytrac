@@ -9,7 +9,7 @@ import SwiftUI
 import FirebaseFirestore
 
 struct TreatmentHomeView: View {
-    @State private var appointments: [Appointment] = []
+    @State private var appointments: [AppointmentModel] = []
     
     var body: some View {
         ScrollView {
@@ -31,19 +31,7 @@ struct TreatmentHomeView: View {
                     .bold()
 
                 ForEach(appointments) { appointment in
-                    VStack(alignment: .leading) {
-                        Text(appointment.patientName).bold()
-                        Text(appointment.location)
-                        HStack {
-                            Text("Start : \(formatTime(appointment.startTime))").foregroundColor(.blue)
-                            Spacer()
-                            Text("Date : \(formatDate(appointment.date))").foregroundColor(.blue)
-                        }
-                    }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 2)
+                    AppointmentCardView(appointment: appointment)
                 }
             }
             .padding(20)
@@ -58,16 +46,36 @@ struct TreatmentHomeView: View {
         Firestore.firestore().collection("appointments").getDocuments { snapshot, _ in
             if let docs = snapshot?.documents {
                 appointments = docs.map {
-                    Appointment(id: $0.documentID,
+                    AppointmentModel(id: $0.documentID,
                                 patientName: $0["patientName"] as? String ?? "",
-                                date: $0["date"] as? Date ?? Date(),
-                                startTime:  $0["startTime"] as? Date ?? Date(),
-                                endTime: $0["endTime"] as? Date ?? Date(),
+                                     date: $0["date"] as? Timestamp ?? Timestamp(),
+                                startTime:  $0["startTime"] as? Timestamp ?? Timestamp(),
+                                endTime: $0["endTime"] as? Timestamp ?? Timestamp(),
                                 location: $0["location"] as? String ?? "",
                                 notify: $0["notify"] as? Bool ?? false)
                 }
             }
         }
+    }
+}
+
+struct AppointmentCardView: View {
+    let appointment: AppointmentModel
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(appointment.patientName).bold()
+            Text(appointment.location)
+            HStack {
+                Text("Start : \(formatTime(from: appointment.startTime))").foregroundColor(.blue)
+                Spacer()
+                Text("Date : \(formatDate(from: appointment.date))").foregroundColor(.blue)
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(radius: 2)
     }
 }
 

@@ -102,7 +102,7 @@ struct PatientLoginView: View {
                         .padding(.top, 10)
                         
                         Button {
-                            loginVM.signIn()
+                            loginVM.patientSignIn()
                         } label: {
                             Text("SIGN IN")
                                 .fontWeight(.bold)

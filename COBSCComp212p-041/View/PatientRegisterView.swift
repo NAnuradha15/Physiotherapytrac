@@ -122,7 +122,7 @@ struct PatientRegisterView: View {
                             .padding(.top, 15)
                             
                             Button {
-                                registerVM.registerUser()
+                                registerVM.registerPatientUser()
                             } label: {
                                 Text("Register")
                                     .fontWeight(.bold)

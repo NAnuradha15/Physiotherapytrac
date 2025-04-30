@@ -1,5 +1,5 @@
 //
-//  ProfileView.swift
+//  PatientProfileView.swift
 //  COBSCComp212p-041
 //
 //  Created by Yesh Adithya on 2025-04-25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ProfileView: View {
+struct PatientProfileView: View {
     @StateObject private var profileVM = AuthViewModel()
     @State var visible = false
     
@@ -17,7 +17,7 @@ struct ProfileView: View {
                 VStack{
                     
                     HStack {
-                        Text("User Details")
+                        Text("Patient User Details")
                             .fontWeight(.regular)
                             .font(.system(size: 28))
                             .foregroundColor(Color.bgBlack)
@@ -82,7 +82,7 @@ struct ProfileView: View {
                             .padding(.top, 15)
                             
                             Button {
-                                profileVM.updateUserProfile()
+                                profileVM.updatePatientUserProfile()
                             } label: {
                                 Text("Update")
                                     .fontWeight(.bold)
@@ -126,7 +126,6 @@ struct ProfileView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
     }
 }
 

@@ -15,6 +15,7 @@ class TreatmentPlanViewModel: ObservableObject {
     @Published var plan = TreatmentPlan(treatmentName: "", patientID: "", days: 0, time: "", count: 0)
     @Published var message = ErrorMessageModel(alert: false, error: "", topic: "Error", isLoading: false)
     @Published var treatmentPlans: [TreatmentPlan] = []
+    @Published var User = UserModel(username: UserDefaults.standard.string(forKey: "username") ?? "", mobile: UserDefaults.standard.string(forKey: "userMobile") ?? "", email: UserDefaults.standard.string(forKey: "userEmail") ?? "", isBiometric: UserDefaults.standard.bool(forKey: "userIsBiometric"))
 
     func save() {
         self.message.alert.toggle()
@@ -40,7 +41,7 @@ class TreatmentPlanViewModel: ObservableObject {
     
     func fetchPlans() {
         do {
-            Firestore.firestore().collection("treatmentPlans").order(by: "createdAt", descending: true).addSnapshotListener { (querySnapshot, error) in
+            Firestore.firestore().collection("treatmentPlans").addSnapshotListener { (querySnapshot, error) in
              if let querySnapshot = querySnapshot {
                  self.treatmentPlans = querySnapshot.documents.compactMap { document -> TreatmentPlan? in
                      try? document.data(as: TreatmentPlan.self)
